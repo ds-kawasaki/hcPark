@@ -83,7 +83,7 @@ public class NewBehaviourScript : MonoBehaviour
         }
     }
 
-    private enum Status
+    public enum Status
     {
         Input,
         Moving,
@@ -97,6 +97,8 @@ public class NewBehaviourScript : MonoBehaviour
     [SerializeField] private List<CarSet> carSets;
     //インスペクタにて、車の速度を割り当てる
     [SerializeField] private float speed;
+    //インスペクタにて、テキストを割り当てる
+    [SerializeField] private TMPro.TMP_Text text;
 
     private Status status = Status.Input;
     private CarSet nowSet = null;
@@ -105,6 +107,7 @@ public class NewBehaviourScript : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
+        this.text.enabled = false;
     }
 
     // Update is called once per frame
@@ -124,8 +127,17 @@ public class NewBehaviourScript : MonoBehaviour
     }
 
 
-    private void ChangeState(Status newState)
+    public void ChangeState(Status newState)
     {
+        switch (newState)
+        {
+            case Status.Failed:
+                StartCoroutine(EndWait(false));
+                break;
+            case Status.Success:
+                StartCoroutine(EndWait(true));
+                break;
+        }
         this.status = newState;
     }
 
@@ -181,6 +193,24 @@ public class NewBehaviourScript : MonoBehaviour
 
 
 
+
+    private IEnumerator EndWait(bool isSuccess)
+    {
+        const float WAIT = 3.0f;
+
+        this.text.SetText(isSuccess ? "Success" : "Failed");
+        this.text.enabled = true;
+
+        var startTime = Time.time;
+        while (true)
+        {
+            var now = Time.time - startTime;
+            if (now >= WAIT) { break; }
+            yield return null;
+        }
+
+        StageManager.Instance.ChangeScene(isSuccess);
+    }
 
     private CarSet FindCar(Vector3 pos)
     {

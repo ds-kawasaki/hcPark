@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
-public class NewBehaviourScript : MonoBehaviour
+public class MainGame : MonoBehaviour
 {
     private const float MIN_DISTANCE = 0.7f;
 
@@ -124,6 +124,13 @@ public class NewBehaviourScript : MonoBehaviour
             default:
                 break;
         }
+    }
+
+
+    // Carの当たり判定から呼ばれる
+    public void CollisionFromCar()
+    {
+        this.ChangeState(Status.Failed);
     }
 
 

@@ -19,7 +19,7 @@ public class MainGame : MonoBehaviour
 
         private List<GameObject> line = new List<GameObject>();
 
-        public void Clear()
+        public void ClearLine()
         {
             foreach (var n in this.line)
             {
@@ -30,6 +30,14 @@ public class MainGame : MonoBehaviour
 
         public void AddLine(Vector3 pos)
         {
+            if (this.line.Count > 0)
+            {
+                var last = this.line.Last();
+                var sa = last.transform.position - pos;
+                sa.y = 0.0f;
+                if (sa.sqrMagnitude < (MIN_DISTANCE*0.8f)*(MIN_DISTANCE*0.8f)) { return; }  //  ひとつ前と近すぎるのは登録しない
+                // Debug.Log($"AddLine:{sa.magnitude}");
+            }
             GameObject mark = Instantiate(this.markPrefab);
             mark.transform.position = pos;
             this.line.Add(mark);
@@ -44,13 +52,17 @@ public class MainGame : MonoBehaviour
                 var top = this.line[0];
                 var sa = top.transform.position;
                 sa -= rb.position;
-                sa.y = 0; //高さは無視
+                sa.y = 0.0f; //高さは無視
                 if (sa.sqrMagnitude > delta * delta)
                 {
                     sa = sa.normalized;
                     sa *= delta;
                     sa += rb.position;
                     rb.MovePosition(sa);
+                    if (this.IsGoal(MIN_DISTANCE*0.5f))
+                    {
+                        this.ClearLine();
+                    }
                     break;
                 }
                 else
@@ -71,15 +83,17 @@ public class MainGame : MonoBehaviour
             if (this.line.Count > 0) { return false; } // 既にラインひいている車はパス
             var sa = this.car.transform.position;
             sa -= pos;
+            sa.y = 0.0f; //高さは無視
             return sa.sqrMagnitude < MIN_DISTANCE * MIN_DISTANCE;
         }
 
-        public bool IsGoal()
+        public bool IsGoal(float distance = MIN_DISTANCE)
         {
-            if (this.line.Count > 0) { return false; } // ライン残っている場合まだ
+            // if (this.line.Count > 0) { return false; } // ライン残っている場合まだ
             var sa = this.car.transform.position;
             sa -= this.goal.transform.position;
-            return sa.sqrMagnitude < MIN_DISTANCE * MIN_DISTANCE;
+            sa.y = 0.0f; //高さは無視
+            return sa.sqrMagnitude < distance * distance;
         }
     }
 
@@ -172,7 +186,6 @@ public class MainGame : MonoBehaviour
             {
                 var pos = this.ScreenPointToGroundPosition(Input.mousePosition);
                 this.nowSet.AddLine(pos);
-
             }
         }
     }

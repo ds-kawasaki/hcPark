@@ -19,6 +19,7 @@ public class Car : MonoBehaviour
 
     void OnCollisionEnter(Collision other)
     {
+        Debug.Log(other.gameObject.tag);
         if (other.gameObject.tag == "Car")
         {
             GameObject player = GameObject.FindWithTag("Player");
@@ -29,7 +30,7 @@ public class Car : MonoBehaviour
                 {
                     mainGame.CollisionFromCar();
                 }
-            }
+            }            
             var sa = other.gameObject.transform.position - this.gameObject.transform.position;
             sa.y = 0.0f; //高低差無視
             sa.Normalize();
@@ -38,6 +39,7 @@ public class Car : MonoBehaviour
             var orb = other.gameObject.GetComponent<Rigidbody>();
             if (orb != null)
             {
+                // orb.isKinematic = false;
                 orb.AddForce(sa);
             }
             sa *= -1.0f;
@@ -45,6 +47,7 @@ public class Car : MonoBehaviour
             var trb = this.gameObject.GetComponent<Rigidbody>();
             if (trb != null)
             {
+                // trb.isKinematic = false;
                 trb.AddForce(sa);
             }
         }

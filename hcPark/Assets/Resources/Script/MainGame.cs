@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -57,11 +58,14 @@ public class MainGame : MonoBehaviour
                 {
                     sa = sa.normalized;
                     sa *= delta;
-                    sa += rb.position;
-                    rb.MovePosition(sa);
+                    rb.MovePosition(sa + rb.position);
+                    var offsetRot = Quaternion.Inverse(Quaternion.LookRotation(Vector3.right, Vector3.up)); //モデル向き補正用
+                    var rot = Quaternion.LookRotation(sa, Vector3.up) * offsetRot;
+                    rb.rotation = rot;
                     if (this.IsGoal(MIN_DISTANCE*0.5f))
                     {
                         this.ClearLine();
+                        rb.velocity = Vector3.zero;
                     }
                     break;
                 }
@@ -70,6 +74,10 @@ public class MainGame : MonoBehaviour
                     Destroy(top);
                     this.line.RemoveAt(0);
                 }
+            }
+            if (this.line.Count == 0)
+            {
+                rb.velocity = Vector3.zero;
             }
         }
 
@@ -94,6 +102,13 @@ public class MainGame : MonoBehaviour
             sa -= this.goal.transform.position;
             sa.y = 0.0f; //高さは無視
             return sa.sqrMagnitude < distance * distance;
+        }
+
+        public void StopVelocity()
+        {
+            var rb = this.car.GetComponent<Rigidbody>();
+            if (rb == null) { return; }
+            rb.velocity = Vector3.zero;
         }
     }
 
@@ -156,6 +171,10 @@ public class MainGame : MonoBehaviour
                 StartCoroutine(EndWait(false));
                 break;
             case Status.Success:
+                foreach (var n in this.carSets)
+                {
+                    n.StopVelocity();
+                }
                 StartCoroutine(EndWait(true));
                 break;
         }
